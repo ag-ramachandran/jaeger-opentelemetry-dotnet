@@ -1,15 +1,41 @@
 receivers:
-  otlp:
-    protocols:
-      grpc:
-
+    otlp:
+        protocols:
+            grpc:
+            http:
 exporters:
-  logzio:
-    account_token: "<YOUR_TRACE_TOKEN>"
-    region: "NL"
-
+    logging:
+        loglevel: debug
+    azuredataexplorer:
+        cluster_uri: https://sdktestcluster.westeurope.dev.kusto.windows.net
+    # Client Id
+        application_id: 
+    # The client secret for the client
+        application_key: 
+    # The tenant
+        tenant_id: 
+    # database for the logs
+        db_name: "otel" #set database name
+        metrics_table_name: "OTELMetrics"
+        logs_table_name: "OTELLogs"
+        traces_table_name: "OTELTraces"
+        ingestion_type: "managed"
+processors:
+    resourcedetection:
+        detectors: [system]
+    batch:
 service:
-  pipelines:
-    traces:
-      receivers: [otlp]
-      exporters: [logzio]
+    telemetry:
+        metrics:
+    pipelines:
+      traces:
+        receivers: [otlp]
+        exporters: [azuredataexplorer]
+        processors: [batch]
+      metrics:
+        receivers: [otlp]
+        processors: [resourcedetection, batch]
+        exporters: [azuredataexplorer]
+      logs:
+        receivers: [otlp]
+        exporters: [ azuredataexplorer]

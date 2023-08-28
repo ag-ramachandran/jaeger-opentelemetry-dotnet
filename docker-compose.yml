@@ -2,8 +2,8 @@ version: "3"
 services:
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.23.0 # https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/3702
-    container_name: otel-logzio
+    image: otel/opentelemetry-collector-contrib:0.83.0 # https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/3702
+    container_name: otel-kusto
     command: ["--config=/etc/otel-collector-config.yml"]
     volumes:
       - ./config.yaml:/etc/otel-collector-config.yml:ro
