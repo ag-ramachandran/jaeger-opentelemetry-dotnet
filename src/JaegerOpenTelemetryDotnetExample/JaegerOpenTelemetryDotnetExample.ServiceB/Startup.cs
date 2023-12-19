@@ -6,7 +6,9 @@ using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Logs;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace JaegerOpenTelemetryDotnetExample.ServiceB
 {
@@ -22,13 +24,27 @@ namespace JaegerOpenTelemetryDotnetExample.ServiceB
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            var defaultResource = ResourceBuilder.CreateDefault().AddService("ServiceB");
+
 
             // This must be set before creating a GrpcChannel/HttpClient when calling an insecure service
             AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+                        services.AddLogging(builder =>
+            {
+                builder.AddOpenTelemetry(options => {
+                    options.SetResourceBuilder(defaultResource);
+                    options.AddOtlpExporter(o =>
+                    {
+                        o.Endpoint = new Uri("http://otel-collector:4317");
+                        o.ExportProcessorType = ExportProcessorType.Simple;
+                    });
+                });
+            });
 
-            services.AddOpenTelemetryTracing(
-                (builder) => builder
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("ServiceB"))
+            services.AddOpenTelemetry()
+                .ConfigureResource(builder => builder.AddService(serviceName: "MyService"))
+                .WithTracing(builder => builder
+                    .SetResourceBuilder(defaultResource)
                     .AddSource("ExampleTracer")
                     .AddAspNetCoreInstrumentation()
                     .AddConsoleExporter()

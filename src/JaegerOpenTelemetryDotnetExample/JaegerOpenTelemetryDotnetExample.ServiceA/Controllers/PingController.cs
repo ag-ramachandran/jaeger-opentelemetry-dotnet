@@ -47,6 +47,7 @@
 
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using System.Diagnostics;
 using System.Net.Http;
@@ -58,10 +59,20 @@ namespace JaegerOpenTelemetryDotnetExample.ServiceA.Controllers
     [Route("[controller]")]
     public class PingController : ControllerBase
     {
+
+        private readonly ILogger _logger;
+
+        public PingController(ILogger<PingController> logger){
+            _logger = logger;
+        }
+
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            _logger.LogInformation("Starting PingController.Get()");
+
             using var source = new ActivitySource("ExampleTracer");
+
 
             // A span
             using var activity = source.StartActivity("Call to Service B");
@@ -75,6 +86,8 @@ namespace JaegerOpenTelemetryDotnetExample.ServiceA.Controllers
             // Another span
             using var activityTwo = source.StartActivity("Arbitrary 10ms delay");
             await Task.Delay(10);
+
+            _logger.LogInformation("Added tracing spans and now retruning from PingController.Get()");
 
             return Ok();
         }

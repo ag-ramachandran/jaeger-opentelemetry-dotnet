@@ -15,6 +15,7 @@ namespace JaegerOpenTelemetryDotnetExample.ServiceA
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    
                 });
     }
 }
